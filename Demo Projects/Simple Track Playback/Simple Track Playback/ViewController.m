@@ -55,7 +55,32 @@
 }
 
 -(IBAction)playPause:(id)sender {
-    [self.player setIsPlaying:!self.player.isPlaying callback:nil];
+    [self.player setIsPlaying:!self.player.isPlaying callback:^(NSError *error) {
+        NSLog(@"Play pause: %@", error);
+    }];
+}
+
+- (IBAction)playURI:(id)sender {
+    NSURL *url = [NSURL URLWithString:@"spotify:track:50YjprT4gkGLhHpkOM6p5o"];
+    [self.player playURI:url startingWithIndex:10 callback:^(NSError *error) {
+        if (error != nil) {
+            NSLog(@"*** failed to play: %@", error);
+            return;
+        }
+    }];
+}
+
+- (IBAction)hitQueueURI:(id)sender {
+    NSURL *url = [NSURL URLWithString:@"spotify:track:4TeHKwS2FBGCW3YGyrlbyl"];
+    [self.player queueURI:url callback:^(NSError *error) {
+        NSLog(@"quereURI error: %@", error);
+        NSURL *url2 = [NSURL URLWithString:@"spotify:track:5Iud0Q7wJrTTHWgxXMAmUi"];
+        [self.player queueURI:url2 callback:^(NSError *error) {
+            NSLog(@"quereURI2 error: %@", error);
+        }];
+    }];
+    
+
 }
 
 -(IBAction)fastForward:(id)sender {
@@ -205,6 +230,7 @@
 
 -(void)audioStreaming:(SPTAudioStreamingController *)audioStreaming didChangePlaybackState:(SPTPlaybackState *)playbackState {
     self.playbackState = playbackState;
+    NSLog(@"PS %@, %@, %@", playbackState.prevTrack, playbackState.currentTrack, playbackState.nextTrack);
     [self updateUI];
 }
 
@@ -230,12 +256,5 @@
 - (void)audioStreamingDidLogin:(SPTAudioStreamingController *)audioStreaming {
 
     [self updateUI];
-    NSURL *url = [NSURL URLWithString:@"spotify:user:spotify:playlist:5wDvHZhgPBlWyDEZ3jSMF4"];
-    [self.player playURI:url startingWithIndex:10 callback:^(NSError *error) {
-        if (error != nil) {
-            NSLog(@"*** failed to play: %@", error);
-            return;
-        }
-    }];
 }
 @end
