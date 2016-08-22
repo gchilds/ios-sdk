@@ -33,6 +33,7 @@
     auth.tokenRefreshURL = [NSURL URLWithString:@kTokenRefreshServiceURL];
     #endif
     auth.sessionUserDefaultsKey = @kSessionUserDefaultsKey;
+    auth.allowNativeLogin = NO;
     return YES;
 }
 

@@ -257,4 +257,17 @@
 
     [self updateUI];
 }
+
+-(void)audioStreaming:(SPTAudioStreamingController *)audioStreaming didStartPlayingTrack:(NSURL *)trackUri {
+    NSLog(@"I am not called!");
+}
+
+-(void)audioStreaming:(SPTAudioStreamingController *)audioStreaming didStopPlayingTrack:(NSURL *)trackUri {
+    NSLog(@"I am not called!");
+}
+
+-(void)audioStreamingDidSkipToNextTrack:(SPTAudioStreamingController *)audioStreaming {
+    NSLog(@"I am called!");
+}
+
 @end
