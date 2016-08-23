@@ -95,6 +95,12 @@
     }
 }
 
+- (IBAction)seekZero:(id)sender {
+    [self.player seekToOffset:0 callback:^(NSError *error) {
+        NSLog(@"seekToOffset: 0: %@", error);
+    }];
+}
+
 #pragma mark - Logic
 
 
