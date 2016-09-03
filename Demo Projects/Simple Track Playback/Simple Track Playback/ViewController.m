@@ -240,8 +240,17 @@
         }
         
         SPTPlaylistSnapshot *playlistSnapshot = [SPTPlaylistSnapshot playlistSnapshotFromData:data withResponse:response error:nil];
-        
-        [self.player playURIs:playlistSnapshot.firstTrackPage.items fromIndex:0 callback:nil];
+
+        if (1) {
+            NSArray *URIs = @[
+                [NSURL URLWithString:@"spotify:track:1mnqraQ8oV8MX92rdOFLWW"],
+                [NSURL URLWithString:@"spotify:track:35NyjYJFaJxqbUF2y0jWl1"]
+            ];
+            [self.player playURIs:URIs fromIndex:0 callback:nil];
+
+        } else {
+            [self.player playURIs:playlistSnapshot.firstTrackPage.items fromIndex:0 callback:nil];
+        }
     }];
 }
 
