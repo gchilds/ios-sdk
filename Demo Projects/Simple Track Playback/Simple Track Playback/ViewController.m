@@ -37,6 +37,8 @@
 
 @end
 
+NSString *nextTrackUriToQueue = nil;
+
 @implementation ViewController
 
 -(void)viewDidLoad {
@@ -60,6 +62,7 @@
 }
 
 -(IBAction)fastForward:(id)sender {
+    NSLog(@"START SKIP");
     [self.player skipNext:nil];
 }
 
@@ -208,6 +211,9 @@
 }
 
 -(void)audioStreaming:(SPTAudioStreamingController *)audioStreaming didChangeMetadata:(SPTPlaybackMetadata *)metadata {
+    NSLog(@"didChangeMetadata: %@, CUR: %@, NEXT: %@", metadata, metadata.currentTrack, metadata.nextTrack);
+    
+    
     [self updateUI];
 }
 
@@ -241,6 +247,17 @@
     if (self.isChangingProgress) {
         return;
     }
+    
+    if (position > 3 && nextTrackUriToQueue) {
+        
+        [audioStreaming queueSpotifyURI:nextTrackUriToQueue callback:^(NSError *error) {
+            NSLog(@"queueSpotifyURI: %@", error);
+        }];
+        
+        nextTrackUriToQueue = nil;
+    }
+
+    
     self.progressSlider.value = position/self.player.metadata.currentTrack.duration;
 
 }
@@ -261,11 +278,24 @@
 
 - (void)audioStreamingDidLogin:(SPTAudioStreamingController *)audioStreaming {
     [self updateUI];
-    [self.player playSpotifyURI:@"spotify:user:spotify:playlist:2yLXxKhhziG2xzy7eyD4TD" startingWithIndex:0 startingWithPosition:10 callback:^(NSError *error) {
-        if (error != nil) {
-            NSLog(@"*** failed to play: %@", error);
-            return;
-        }
-    }];
+    
+    if (1) {
+        // single track plus queeuSpotifyURI
+        [self.player playSpotifyURI:@"spotify:track:1mnqraQ8oV8MX92rdOFLWW" startingWithIndex:0 startingWithPosition:10 callback:^(NSError *error) {
+            if (error != nil) {
+                NSLog(@"*** failed to play track: %@", error);
+                return;
+            }
+            nextTrackUriToQueue = @"spotify:track:35NyjYJFaJxqbUF2y0jWl1";
+        }];
+    } else {
+        [self.player playSpotifyURI:@"spotify:user:spotify:playlist:2yLXxKhhziG2xzy7eyD4TD" startingWithIndex:0 startingWithPosition:10 callback:^(NSError *error) {
+            if (error != nil) {
+                NSLog(@"*** failed to play playlist: %@", error);
+                return;
+            }
+
+        }];
+    }
 }
 @end
