@@ -55,6 +55,7 @@
 }
 
 -(IBAction)fastForward:(id)sender {
+    NSLog(@"START SKIP");
     [self.player skipNext:nil];
 }
 
@@ -185,6 +186,10 @@
                                               cancelButtonTitle:@"OK"
                                               otherButtonTitles:nil];
     [alertView show];
+}
+
+-(void)audioStreaming:(SPTAudioStreamingController *)audioStreaming didStartPlayingTrack:(NSURL *)trackUri {
+    NSLog(@"TRACK STARTED PLAYING");
 }
 
 - (void)audioStreaming:(SPTAudioStreamingController *)audioStreaming didFailToPlayTrack:(NSURL *)trackUri {
