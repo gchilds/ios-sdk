@@ -20,6 +20,47 @@
 #import <SpotifyMetadata/SpotifyMetadata.h>
 #import <AVFoundation/AVFoundation.h>
 
+static OSStatus
+FilteredRenderProc(void *inRefCon,
+                   AudioUnitRenderActionFlags* ioActionFlags,
+                   const AudioTimeStamp* inTimeStamp,
+                   UInt32 inBusNumber,
+                   UInt32 inNumberFrames,
+                   AudioBufferList* ioData)
+{
+    // Audio data is only present in post render
+    if (*ioActionFlags & kAudioUnitRenderAction_PostRender) {
+        // zero out left channel as a proof of concept.
+        // TODO: Call an AUv3 effect to do something better here
+        bzero(ioData->mBuffers[0].mData, ioData->mBuffers[0].mDataByteSize);
+    }
+    return noErr;
+}
+
+@interface FilteredCoreAudioController: SPTCoreAudioController
+@end
+
+@implementation FilteredCoreAudioController
+
+-(BOOL)connectOutputBus:(UInt32)sourceOutputBusNumber ofNode:(AUNode)sourceNode toInputBus:(UInt32)destinationInputBusNumber ofNode:(AUNode)destinationNode inGraph:(AUGraph)graph error:(NSError **)error {
+    
+    // let's put a render notify callback on the destination node (a mixer) and get procedural there.
+    AudioUnit destinationAudioUnit;
+    OSStatus status;
+    
+    status = AUGraphNodeInfo(graph, destinationNode, NULL, &destinationAudioUnit);
+    if (noErr != status) return NO;
+    
+    status = AudioUnitAddRenderNotify(destinationAudioUnit, FilteredRenderProc, NULL);
+    if (noErr != status) return NO;
+    
+    // we don't connect the nodes ourselves, so call super to do it for us
+    return [super connectOutputBus:sourceOutputBusNumber ofNode:sourceNode toInputBus:destinationInputBusNumber ofNode:destinationNode inGraph:graph error:error];
+}
+
+
+@end
+
 @interface ViewController () <SPTAudioStreamingDelegate>
 
 @property (weak, nonatomic) IBOutlet UILabel *trackTitle;
@@ -180,7 +221,10 @@
     if (self.player == nil) {
         NSError *error = nil;
         self.player = [SPTAudioStreamingController sharedInstance];
-        if ([self.player startWithClientId:auth.clientID audioController:nil allowCaching:YES error:&error]) {
+		
+        FilteredCoreAudioController *caController = [[FilteredCoreAudioController alloc] init];
+        
+        if ([self.player startWithClientId:auth.clientID audioController:caController allowCaching:YES error:&error]) {
             self.player.delegate = self;
             self.player.playbackDelegate = self;
             self.player.diskCache = [[SPTDiskCache alloc] initWithCapacity:1024 * 1024 * 64];
